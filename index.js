@@ -46,34 +46,16 @@ let screenShareOn = false;
 let joinPageVideoStream = null;
 
 async function tokenGeneration() {
-  if (TOKEN != "") {
-    token = TOKEN;
-    console.log(token);
-  } else if (AUTH_URL != "") {
-    token = await window
-      .fetch(AUTH_URL + "/generateJWTToken")
-      .then(async (response) => {
-        const { token } = await response.json();
-        console.log(token);
-        return token;
-      })
-      .catch(async (e) => {
-        console.log(await e);
-        return;
-      });
-  } else if (AUTH_URL == "" && TOKEN == "") {
-    alert("Set Your configuration details first ");
-    window.location.href = "/";
-    // window.location.reload();
-  } else {
-    alert("Check Your configuration once ");
-    window.location.href = "/";
-    // window.location.reload();
-  }
+  await fetch('http://localhost:9000/get-token')
+  .then((response) => response.json())
+  .then((data) => {
+    console.log(data)
+    token = data.token;
+  })
 }
 
 async function validateMeeting() {
-  tokenGeneration();
+  await tokenGeneration();
   meetingId = document.getElementById("joinMeetingId").value;
   if (token != "") {
     const url = `${API_BASE_URL}/api/meetings/${meetingId}`;
@@ -409,7 +391,7 @@ async function startMeeting(token, meetingId, name) {
 
 // joinMeeting();
 async function joinMeeting(newMeeting) {
-  tokenGeneration();
+  await tokenGeneration();
   let joinMeetingName =
     document.getElementById("joinMeetingName").value || "JSSDK";
   let meetingId = document.getElementById("joinMeetingId").value || "";
@@ -484,7 +466,7 @@ async function joinMeeting(newMeeting) {
         console.log("NEW MEETING meetingId", meetingId);
         return meetingId;
       }
-    );
+    ).catch((error) => console.log("error", error));
     document.getElementById("meetingid").value = meetingId;
     startMeeting(token, meetingId, joinMeetingName);
   }
